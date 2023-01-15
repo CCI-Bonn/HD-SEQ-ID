@@ -54,7 +54,14 @@ pip install HD-SEQ-ID/  # Install the repository for the current virtualenv
 ## How to use it 
 
 Using HD-SEQ-ID is straightforward. You can use it in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
-automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. Here is a minimalistic example of how you can use HD-SEQ-ID. Note that the `hd_seq_id` command should be run inside the HED-SEQ-ID folder. 
+automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. 
+
+- Download the following folder named `resnet18_best_models` inside the `HD-SEQ-ID` folder. If downloading the models one-by-one, make sure that all models are located in `HD-SEQ-ID/resnet18_best_models`.
+<sup>2</sup>https://drive.google.com/drive/folders/1reSTwPgMfb7AXC9sfNJHW9b3_uIBS0AY?usp=sharing
+
+- Note that the `hd_seq_id` command should be run inside the `HED-SEQ-ID` folder, check your current working directory before running. 
+
+Here is a minimalistic example of how you can use HD-SEQ-ID. 
 
 ```bash
 hd_seq_id -i INPUT_FOLDER -o OUTPUT_FOLDER
