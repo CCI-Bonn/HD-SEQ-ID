@@ -56,15 +56,20 @@ pip install HD-SEQ-ID/  # Install the repository for the current virtualenv
 Using HD-SEQ-ID is straightforward. You can use it in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
 automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. 
 
-- Download the following folder named `resnet18_best_models` inside the `HD-SEQ-ID` folder. If downloading the models one-by-one, make sure that all models are located in `HD-SEQ-ID/resnet18_best_models`.
+- Download the models from the follwing link:
 <sup>2</sup>https://drive.google.com/drive/folders/1reSTwPgMfb7AXC9sfNJHW9b3_uIBS0AY?usp=sharing
 
+Define a `<MODELS_FOLDER>`, where the 5 `.pth` files are downloaded. It will be used as an input argument by running the `hd_seq_id` command.
+
 - Note that the `hd_seq_id` command should be run inside the `HED-SEQ-ID` folder, check your current working directory before running. 
+
+Define an `<INPUT_FOLDER>`, where all NIfTI images are located (4D or 3D). Define an empty `<OUTPUT_FOLDER>`, where the 3D NIfTI files, where the processed and renamed 3D NIfTIs will be located. They will be used as an input argument by running the `hd_seq_id` command.   
+
 
 Here is a minimalistic example of how you can use HD-SEQ-ID. 
 
 ```bash
-hd_seq_id -i INPUT_FOLDER -o OUTPUT_FOLDER
+hd_seq_id -i <INPUT_FOLDER> -o <OUTPUT_FOLDER> -m <MODELS_FOLDER>
 ```
 
 The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files under in OUTPUT_FOLDER.
