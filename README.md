@@ -53,11 +53,11 @@ pip install HD-SEQ-ID/  # Install the repository for the current virtualenv
 
 ## How to use it 
 
-Using HD-SEQ-ID is straightforward. You can use it in any terminal on your linux system or WSL command line. The `hd-seq-id` command was installed 
-automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. Here is a minimalistic example of how you can use HD-SEQ-ID.
+Using HD-SEQ-ID is straightforward. You can use it in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
+automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. Here is a minimalistic example of how you can use HD-SEQ-ID. Note that the `hd_seq_id` command should be run inside the HED-SEQ-ID folder. 
 
 ```bash
-hd-seq-id -i INPUT_FOLDER -o OUTPUT_FOLDER
+hd_seq_id -i INPUT_FOLDER -o OUTPUT_FOLDER
 ```
 
 The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files under in OUTPUT_FOLDER.
@@ -69,7 +69,7 @@ Future versions might include parameters to specifiy whether an automated renami
 For more information, please refer to the help functionality:
 
 ```bash
-hd-seq-id --help
+hd_seq_id --help
 ```
 
 ## FAQ
