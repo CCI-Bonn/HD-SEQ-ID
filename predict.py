@@ -93,6 +93,9 @@ test_transforms.set_random_state(seed=1)
 
 #%% Define resnet18
 
+
+
+
 def resnet18(n_slices = 1, num_classes = 9):
  	
  	net = torchvision.models.resnet18(num_classes = num_classes)
@@ -109,61 +112,69 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 #%% Upload model weights
 
-model_1 = resnet18(n_slices = 1, num_classes = 9)
-model_1 = model_1.to(device)
-model_1.load_state_dict(torch.load('resnet18_best_models/WIN__best-metric__resnet18__Fold_1_epoch_41_2022-12-13.pth')) #, map_location='cuda'
-time.sleep(1)
-model_1.eval()
+def create_CNN_models(models_folder):
+    
+    if os.path.isdir(models_folder):
+        model_names = []
+        for root, dirs, files in os.walk(models_folder):
+            for file in files:
+                if file.endswith(".pth"):
+                    model_names.append(os.path.join(root, file))
+    else:
+        print('check models folder')
+        
+
+    model_1 = resnet18(n_slices = 1, num_classes = 9)
+    model_1 = model_1.to(device)
+    model_1.load_state_dict(torch.load(model_names[0])) #, map_location='cuda'
+    time.sleep(1)
+    model_1.eval()
 
 
-#%%
+    model_2 = resnet18(n_slices = 1, num_classes = 9)
+    model_2 = model_2.to(device)
+    model_2.load_state_dict(torch.load(model_names[1])) #, map_location='cuda'
+    time.sleep(1)
+    model_2.eval()
+    
 
-model_2 = resnet18(n_slices = 1, num_classes = 9)
-model_2 = model_2.to(device)
-model_2.load_state_dict(torch.load('resnet18_best_models/WIN__best-metric__resnet18__Fold_2_epoch_47_2022-12-13.pth')) #, map_location='cuda'
-time.sleep(1)
-model_2.eval()
+    model_3 = resnet18(n_slices = 1, num_classes = 9)
+    model_3 = model_3.to(device)
+    model_3.load_state_dict(torch.load(model_names[2])) #, map_location='cuda'
+    time.sleep(1)
+    model_3.eval()
 
-#%%
+    model_4 = resnet18(n_slices = 1, num_classes = 9)
+    model_4 = model_4.to(device)
+    model_4.load_state_dict(torch.load(model_names[3])) #, map_location='cuda'
+    time.sleep(1)
+    model_4.eval()
+    
+    model_5 = resnet18(n_slices = 1, num_classes = 9)
+    model_5 = model_5.to(device)
+    model_5.load_state_dict(torch.load(model_names[4])) #, map_location='cuda'
+    time.sleep(1)
+    model_5.eval()
+    
+    return model_1,model_2,model_3,model_4,model_5
 
-model_3 = resnet18(n_slices = 1, num_classes = 9)
-model_3 = model_3.to(device)
-model_3.load_state_dict(torch.load('resnet18_best_models/WIN__best-metric__resnet18__Fold_3_epoch_29_2022-12-13.pth')) #, map_location='cuda'
-time.sleep(1)
-model_3.eval()
 
-#%%
 
-model_4 = resnet18(n_slices = 1, num_classes = 9)
-model_4 = model_4.to(device)
-model_4.load_state_dict(torch.load('resnet18_best_models/WIN__best-metric__resnet18__Fold_4_epoch_46_2022-12-15.pth')) #, map_location='cuda'
-time.sleep(1)
-model_4.eval()
 
-#%%
-model_5 = resnet18(n_slices = 1, num_classes = 9)
-model_5 = model_5.to(device)
-model_5.load_state_dict(torch.load('resnet18_best_models/WIN__best-metric__resnet18__Fold_5_epoch_48_2022-12-15.pth')) #, map_location='cuda'
-time.sleep(1)
-model_5.eval()
-
-#%%
-
-models = [model_1,model_2,model_3,model_4,model_5]
-
-#%%
-
-ensamble_voter = monai.transforms.VoteEnsemble(num_classes=9)
 
 
 #%%
 
 from preprocessing import process_midslice
 
-def hd_seq_id(input_dir,output_dir):
+def hd_seq_id(input_dir,output_dir,models_folder):
     
+    # Preprocessing 
     filenames_all = process_midslice(input_dir, output_dir)
+    # Models
+    model_1,model_2,model_3,model_4,model_5 = create_CNN_models(models_folder)
     
+    # Postprocessing
     midslice_images = []
     output3d_images = []
     for i in range(len(filenames_all)):
@@ -178,6 +189,8 @@ def hd_seq_id(input_dir,output_dir):
     dict_labels = {0:'Other', 1:'T1', 2:'T2', 3:'CT1', 4:'FLAIR', 5:'ADC', 6:'SWI', 7:'Low-B-DWI', 8:'High-B-DWI', 9:'UNKNOWN'}
     
     predictions_list = []
+
+    ensamble_voter = monai.transforms.VoteEnsemble(num_classes=9)
     with torch.no_grad():
         
         for i in range(len(test_ds_fold)):
@@ -234,6 +247,9 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output', help='output. Should be a folder. If it does not exist, the folder'
                                      ' will be created', required=False, type=str)
     
+    parser.add_argument('-m', '--models', help='models folder, where 5 .pth files are downloaded'
+                                     ' ', required=False, type=str)
+    
     parser.add_argument('--overwrite', default=1, type=int, required=False, help="set this to 0 if you don't "
                                                                                           "want to overwrite original image file name. "
                                                                                           "The predicted label will be added to the original "
@@ -243,6 +259,7 @@ if __name__ == "__main__":
     
     input_dir = args.input
     output_dir = args.output
+    models_folder = args.models
     
     rename = args.overwrite
     
@@ -266,7 +283,7 @@ if __name__ == "__main__":
 
     ### Start postprocessing ###
 
-    hd_seq_id(input_dir,output_dir) 
+    hd_seq_id(input_dir,output_dir,models_folder) 
             
     
 

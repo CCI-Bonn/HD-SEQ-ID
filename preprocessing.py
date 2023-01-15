@@ -8,17 +8,11 @@ import scipy.ndimage
 import numpy
 
 
-
-#%% Create Midslice using LASTVOL, RobustFOV and 'CM'
-
-
 image_4d_3d_2d_file_names = []
 image_files_list = []
 image_midslice_list = []
 
-
 #%%
-
 
 def process_midslice(INPUTPATH='', OUTPUTPATH=''):
     
