@@ -1,7 +1,4 @@
 
-
-#scikit-learn must be at version <= 0.17
-
 import os
 import argparse
 import numpy 
@@ -63,7 +60,6 @@ import glob
 import scipy.ndimage
 
 
-
 #%%
 def fix_random_seeds():
 	torch.backends.cudnn.deterministic = True
@@ -84,16 +80,12 @@ g = torch.Generator()
 g.manual_seed(1)
 
 
-
-
 #%%
-
 image_4d_3d_2d_file_names = []
 image_files_list = []
 image_midslice_list = []
 
 #%%
-
 def process_midslice(INPUTPATH='', OUTPUTPATH=''):
     
     input_images = []
@@ -260,22 +252,15 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
 
 
 #%% Define transforms
-
 test_transforms = Compose([AddChannel(), Resize((200, 200, 1)), NormalizeIntensity(), EnsureType()])
 test_transforms.set_random_state(seed=1)
 
 
 #%% Define resnet18
-
-
-
-
 def resnet18(n_slices = 1, num_classes = 9):
  	
  	net = torchvision.models.resnet18(num_classes = num_classes)
  	net.conv1 = nn.Conv2d(n_slices, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-# 	net.layer3 = nn.Identity() 
-# 	net.layer4 = nn.Identity()
  	net.fc = nn.Linear(in_features = 512, out_features = 9, bias = True)
  	return net
 
@@ -285,7 +270,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 #%% Upload model weights
-
 def create_CNN_models(models_folder):
     
     if os.path.isdir(models_folder):
@@ -333,13 +317,7 @@ def create_CNN_models(models_folder):
     return model_1,model_2,model_3,model_4,model_5
 
 
-
-
-
-
 #%%
-
-
 def hd_seq_id(input_dir,output_dir,models_folder):
     
     # Preprocessing 
@@ -402,8 +380,6 @@ def hd_seq_id(input_dir,output_dir,models_folder):
 
 
 #%% Define args
-
-
 if __name__ == "__main__":
     
     import argparse
