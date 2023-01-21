@@ -65,24 +65,23 @@ Define a `<MODELS_FOLDER>`, where the 5 `.pth` files are downloaded. It will be 
 
 Define an `<INPUT_FOLDER>`, where all NIfTI images are located (4D or 3D). Define an empty `<OUTPUT_FOLDER>`, where the 3D NIfTI files, where the processed and renamed 3D NIfTIs will be located. They will be used as an input argument by running the `hd_seq_id` command.   
 
+- NIfTI file names will remain fully and the output label will be added to the end of the basename. 
+ 
+For example: If a `<~/MAINFOLDER/SUBFOLDER/random_NIfTI_name.nii.gz` file is predicted as a FLAIR image, the new name in the output folder will be `<~/MAINFOLDER/SUBFOLDER/random_NIfTI_name_FLAIR.nii.gz`. If the `random_NIfTI_name` part should be deleted, it can be done using simple pipelines in various programming languages. The `hd_seq_id` does not delete the initial basename of the NIfTI file, since if multiple NIfTIs will be present in the same subfolder (input folder or output folder, 4D files input files might be splitted into two different 3D files in the output folder), and if multiple NIfTIs receive the same predicted MRI label, it will result by unintentional removing of the first renamed NIfTI file by replacing it with the other NIfTI file, which receives the same label. For example, Ubuntu would delete the first `~/FLAIR.nii.gz` in the same folder, if the second NIfTI should be named as `FLAIR.nii.gz` as well. 
+
 
 Here is a minimalistic example of how you can use HD-SEQ-ID. 
 
 ```bash
-hd_seq_id -i <INPUT_FOLDER> -o <OUTPUT_FOLDER> -m <MODELS_FOLDER>
+python hd_seq_id -i <INPUT_FOLDER> -o <OUTPUT_FOLDER> -m <MODELS_FOLDER>
 ```
 
-The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files under in OUTPUT_FOLDER.
+The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files under in OUTPUT_FOLDER with the predicted MRI labels addedas a suffix to the NIfTI basename.
 
 Future versions might include parameters to specifiy whether an automated renaming is wished by user (might output a list of the MRI classes without renaming the original NIfTI files).
 
 
-### More options:
-For more information, please refer to the help functionality:
 
-```bash
-hd_seq_id --help
-```
 
 ## FAQ
 
