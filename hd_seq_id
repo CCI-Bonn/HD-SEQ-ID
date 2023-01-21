@@ -1,0 +1,461 @@
+
+
+#scikit-learn must be at version <= 0.17
+
+import os
+import argparse
+import numpy 
+import random
+import cv2
+import time
+import matplotlib.pyplot as plt
+import pandas as pd
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils.data as data
+import torchvision
+
+import nibabel
+
+import shutil
+import tempfile
+import matplotlib.pyplot as plt
+import PIL
+import torch
+from sklearn.metrics import classification_report
+
+import monai
+from monai.apps import download_and_extract
+from monai.config import print_config
+from monai.data import decollate_batch
+from monai.metrics import ROCAUCMetric
+from monai.networks.nets import DenseNet121
+from monai.transforms import (
+    Activations,
+    AddChannel,
+    AsDiscrete,
+    Compose,
+    LoadImage,
+    CropForeground,
+    RandGaussianNoise,
+    RandFlip,
+    RandRotate,
+    RandZoom,
+    ScaleIntensity,
+    NormalizeIntensity,
+    EnsureType,
+)
+from monai.utils import set_determinism
+
+from monai.data import ImageDataset
+from monai.transforms import AddChannel, Compose, RandRotate90, Resize, ScaleIntensity, EnsureType
+
+import SimpleITK as sitk
+import re
+import logging
+import sys
+import torch
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+import glob
+import scipy.ndimage
+
+
+
+#%%
+def fix_random_seeds():
+	torch.backends.cudnn.deterministic = True
+	random.seed(1)
+	torch.manual_seed(1)
+	torch.cuda.manual_seed(1)
+	numpy.random.seed(1)
+    
+fix_random_seeds()
+set_determinism(seed=1)
+
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() 
+    numpy.random.seed(worker_seed)
+    random.seed(worker_seed)
+
+g = torch.Generator()
+g.manual_seed(1)
+
+
+
+
+#%%
+
+image_4d_3d_2d_file_names = []
+image_files_list = []
+image_midslice_list = []
+
+#%%
+
+def process_midslice(INPUTPATH='', OUTPUTPATH=''):
+    
+    input_images = []
+    for root, dirs, files in os.walk(INPUTPATH):
+        for file in files:
+            if file.endswith(".nii.gz"):
+                input_images.append(os.path.join(root, file))
+    
+    renamed_niftis = []
+    for i in range(len(input_images)):
+        renamed_niftis.append(re.sub("\\\\","/",input_images[i]))
+        
+    input_images = renamed_niftis 
+    
+    
+    for i in range(len(input_images)):
+        image_files_list.append(input_images[i])
+        print(i,"   ",(i/(len(input_images))*100)," % ","     ","\n",input_images[i])
+        
+        try:
+            img = nibabel.load(input_images[i])
+            
+            if len(img.shape) == 3:
+                print(img.shape)
+                
+                # robustfov
+                inputfile = input_images[i]
+                last_vol_name = re.sub(".nii.gz","_main.nii.gz",re.sub(INPUTPATH,OUTPUTPATH,inputfile)  )  
+                if not (os.path.isdir(os.path.dirname(last_vol_name))):
+                    os.makedirs(os.path.dirname(last_vol_name))
+
+                output_torobust = re.sub("_main.nii.gz", "_main-rf00.nii.gz", last_vol_name)
+                robust_code = 'robustfov -i ' + inputfile + ' -b 100 -r ' + output_torobust
+                os.system(robust_code)
+                robust_3d_img_name = output_torobust 
+
+                new_img_name = output_torobust
+                
+                # new_image
+                img_rf100 = nibabel.load(new_img_name)
+                print(img_rf100.shape)
+                                            
+                roi_data = img_rf100.get_fdata()
+                CM = scipy.ndimage.measurements.center_of_mass(numpy.array(roi_data))
+                round(CM[2])
+                
+                mid_slice_num = int(round(CM[2]))
+                img_midslice = img_rf100.slicer[:,:,mid_slice_num:(mid_slice_num+1)]                
+                
+                midslice_newname = re.sub("_main-rf00.nii.gz","_CMmidslice_main.nii.gz",new_img_name)     
+     
+                nibabel.save(img_midslice, midslice_newname) # 2D main volume will be saved
+                os.unlink(output_torobust) # delete output_robust
+                
+                image_midslice_list.append(midslice_newname)
+
+                image_4d_3d_2d_file_names.append([input_images[i],input_images[i],midslice_newname])
+                
+            elif len(img.shape) > 3:
+                
+                print(img.shape)
+                                                
+                # convert 4D to 3D
+                img4d = img.get_fdata()
+                
+                first_vol_img = img4d[..., 0]
+                last_vol_img = img4d[..., -1]
+                
+                # save the last volume as 3d nifti in the OUTPUTPATH
+                inputfile = input_images[i]
+                
+                # find the sequence folder name
+                first_foldername =  os.path.basename(os.path.dirname(inputfile)) + '_first' 
+                last_foldername =  os.path.basename(os.path.dirname(inputfile)) + '_last'
+                
+                first_vol_name = re.sub(INPUTPATH,OUTPUTPATH,inputfile)
+                first_vol_name2 = re.sub(os.path.basename(os.path.dirname(inputfile)),first_foldername,first_vol_name  )  
+                last_vol_name = re.sub(INPUTPATH,OUTPUTPATH,inputfile)
+                last_vol_name2 = re.sub(os.path.basename(os.path.dirname(inputfile)),last_foldername,last_vol_name  )  
+                if not (os.path.isdir(os.path.dirname(first_vol_name2))):
+                    os.makedirs(os.path.dirname(first_vol_name2))
+                if not (os.path.isdir(os.path.dirname(last_vol_name2))):
+                    os.makedirs(os.path.dirname(last_vol_name2))
+                    
+                    
+                first_vol_img_new = nibabel.Nifti1Image(first_vol_img, affine=img.affine)    
+                last_vol_img_new = nibabel.Nifti1Image(last_vol_img, affine=img.affine)
+                nibabel.save(first_vol_img_new,first_vol_name2) # 3D first volume will be saved
+                nibabel.save(last_vol_img_new,last_vol_name2) # 3D last volume will be saved
+        
+                ###### robustfov
+                first_inputfile_torobust = first_vol_name2
+                last_inputfile_torobust = last_vol_name2
+                
+                first_output_torobust = re.sub("_first.nii.gz", "_first-rf00.nii.gz", first_inputfile_torobust)
+                last_output_torobust = re.sub("_last.nii.gz", "_last-rf00.nii.gz", last_inputfile_torobust)
+
+                first_robust_code = 'robustfov -i ' + first_inputfile_torobust + ' -b 100 -r ' + first_output_torobust
+                last_robust_code = 'robustfov -i ' + last_inputfile_torobust + ' -b 100 -r ' + last_output_torobust
+                
+                os.system(first_robust_code)
+                os.system(last_robust_code)
+                
+                first_robust_3d_img_name = first_output_torobust
+                last_robust_3d_img_name = last_output_torobust
+                
+                
+                os.unlink(first_inputfile_torobust) # delete the robust 3D lastvolume 
+                os.unlink(last_inputfile_torobust) # delete the robust 3D lastvolume
+                
+                # find center of mass (CM)
+                first_robust_3d_img = nibabel.load(first_robust_3d_img_name)
+                last_robust_3d_img = nibabel.load(last_robust_3d_img_name)
+                
+                first_robust_3d_img.get_fdata()
+                last_robust_3d_img.get_fdata()
+                
+                first_CM = scipy.ndimage.measurements.center_of_mass(numpy.array(first_robust_3d_img.get_fdata()))
+                round(first_CM[2])
+                
+                last_CM = scipy.ndimage.measurements.center_of_mass(numpy.array(last_robust_3d_img.get_fdata()))
+                round(last_CM[2])
+                
+                first_mid_slice_num = int(round(first_CM[2]))
+                last_mid_slice_num = int(round(last_CM[2]))
+                
+                first_img_midslice = first_robust_3d_img.slicer[:,:,first_mid_slice_num:(first_mid_slice_num+1)]
+                last_img_midslice = last_robust_3d_img.slicer[:,:,last_mid_slice_num:(last_mid_slice_num+1)]
+
+                first_midslice_newname = re.sub('.nii.gz','_CMmidslice.nii.gz',first_robust_3d_img_name) 
+                last_midslice_newname = re.sub('.nii.gz','_CMmidslice.nii.gz',last_robust_3d_img_name) 
+                                    
+                try:
+                    first_new_image = nibabel.Nifti1Image(first_img_midslice.get_fdata(), affine=first_robust_3d_img.affine)
+                    last_new_image = nibabel.Nifti1Image(last_img_midslice.get_fdata(), affine=last_robust_3d_img.affine)
+
+                except:
+
+                    print('an error occured at ==>   try: new_image = nibabel.Nifti1Image(img_midslice_new, affine=robust_3d_img.affine)')
+    
+                nibabel.save(first_new_image, first_midslice_newname)
+                nibabel.save(last_new_image, last_midslice_newname)
+                
+                os.unlink(first_robust_3d_img_name) # delete the raw 3D lastvolume 
+                os.unlink(last_robust_3d_img_name) # delete the raw 3D lastvolume 
+                
+                image_midslice_list.append(first_midslice_newname)
+                image_midslice_list.append(last_midslice_newname)
+                
+                image_4d_3d_2d_file_names.append([input_images[i],first_vol_name2,first_midslice_newname])
+                image_4d_3d_2d_file_names.append([input_images[i],last_vol_name2,last_midslice_newname]) 
+            else:
+                print('check image shape or readability...')
+                
+        except:
+
+            print('an error occurred for the image: ')
+            print("     ".join([str(i),input_images[i]]))
+    
+    
+    return image_4d_3d_2d_file_names
+
+
+
+
+#%% Define transforms
+
+test_transforms = Compose([AddChannel(), Resize((200, 200, 1)), NormalizeIntensity(), EnsureType()])
+test_transforms.set_random_state(seed=1)
+
+
+#%% Define resnet18
+
+
+
+
+def resnet18(n_slices = 1, num_classes = 9):
+ 	
+ 	net = torchvision.models.resnet18(num_classes = num_classes)
+ 	net.conv1 = nn.Conv2d(n_slices, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+# 	net.layer3 = nn.Identity() 
+# 	net.layer4 = nn.Identity()
+ 	net.fc = nn.Linear(in_features = 512, out_features = 9, bias = True)
+ 	return net
+
+
+#%%
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+#%% Upload model weights
+
+def create_CNN_models(models_folder):
+    
+    if os.path.isdir(models_folder):
+        model_names = []
+        for root, dirs, files in os.walk(models_folder):
+            for file in files:
+                if file.endswith(".pth"):
+                    model_names.append(os.path.join(root, file))
+    else:
+        print('check models folder')
+        
+
+    model_1 = resnet18(n_slices = 1, num_classes = 9)
+    model_1 = model_1.to(device)
+    model_1.load_state_dict(torch.load(model_names[0])) #, map_location='cuda'
+    time.sleep(1)
+    model_1.eval()
+
+
+    model_2 = resnet18(n_slices = 1, num_classes = 9)
+    model_2 = model_2.to(device)
+    model_2.load_state_dict(torch.load(model_names[1])) #, map_location='cuda'
+    time.sleep(1)
+    model_2.eval()
+    
+
+    model_3 = resnet18(n_slices = 1, num_classes = 9)
+    model_3 = model_3.to(device)
+    model_3.load_state_dict(torch.load(model_names[2])) #, map_location='cuda'
+    time.sleep(1)
+    model_3.eval()
+
+    model_4 = resnet18(n_slices = 1, num_classes = 9)
+    model_4 = model_4.to(device)
+    model_4.load_state_dict(torch.load(model_names[3])) #, map_location='cuda'
+    time.sleep(1)
+    model_4.eval()
+    
+    model_5 = resnet18(n_slices = 1, num_classes = 9)
+    model_5 = model_5.to(device)
+    model_5.load_state_dict(torch.load(model_names[4])) #, map_location='cuda'
+    time.sleep(1)
+    model_5.eval()
+    
+    return model_1,model_2,model_3,model_4,model_5
+
+
+
+
+
+
+#%%
+
+
+def hd_seq_id(input_dir,output_dir,models_folder):
+    
+    # Preprocessing 
+    filenames_all = process_midslice(input_dir, output_dir)
+    # Models
+    model_1,model_2,model_3,model_4,model_5 = create_CNN_models(models_folder)
+    
+    # Postprocessing
+    midslice_images = []
+    output3d_images = []
+    for i in range(len(filenames_all)):
+        print(i)
+        midslice_images.append(re.sub("\\\\", "/", filenames_all[i][2])) #image_4d_3d_2d_file_names => 2d
+        output3d_images.append(re.sub("\\\\", "/", filenames_all[i][1])) #image_4d_3d_2d_file_names => 3d
+        
+    # Test ImageDataset
+    x_test_fold = numpy.array(midslice_images)
+    test_ds_fold = ImageDataset(image_files=x_test_fold, transform=test_transforms)
+    
+    dict_labels = {0:'Other', 1:'T1', 2:'T2', 3:'CT1', 4:'FLAIR', 5:'ADC', 6:'SWI', 7:'Low-B-DWI', 8:'High-B-DWI', 9:'UNKNOWN'}
+    
+    predictions_list = []
+
+    ensamble_voter = monai.transforms.VoteEnsemble(num_classes=9)
+    with torch.no_grad():
+        
+        for i in range(len(test_ds_fold)):
+            # break
+            try:
+                listo = [model_1(test_ds_fold[i].to(device).unsqueeze(0).squeeze(-1)).argmax(),
+                         model_2(test_ds_fold[i].to(device).unsqueeze(0).squeeze(-1)).argmax(),
+                         model_3(test_ds_fold[i].to(device).unsqueeze(0).squeeze(-1)).argmax(),
+                         model_4(test_ds_fold[i].to(device).unsqueeze(0).squeeze(-1)).argmax(),
+                         model_5(test_ds_fold[i].to(device).unsqueeze(0).squeeze(-1)).argmax()]
+        
+                    
+                predicted_label = ensamble_voter(listo)
+                predictions_list.append(int(predicted_label.cpu()))
+
+                print(int(predicted_label.cpu()))
+                
+            except:
+                predictions_list.append(int(9))
+                print("an error occured, check model weights...")
+    
+    
+    for k in range(len(output3d_images)):
+        mid_image_nib = nibabel.load(output3d_images[k])
+        
+
+        out_newname = re.sub('.nii.gz','_'+dict_labels[predictions_list[k]]+'.nii.gz',re.sub(input_dir,output_dir,output3d_images[k])) 
+
+
+        try:
+            nibabel.save(mid_image_nib, out_newname)
+            os.unlink(midslice_images[k])
+        except:
+            print('an error occured by trying to save the image, check for corrupt files...')
+
+
+
+#%% Define args
+
+
+if __name__ == "__main__":
+    
+    import argparse
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('-i', '--input', default='', help='input. Should be an input folder containing 4d or 3d NIfTI images, all files ending with .nii.gz. '
+                                       'Subfolder structure is irrelevant ', required=False, type=str)
+    
+    parser.add_argument('-o', '--output', help='output. Should be a folder. If it does not exist, the folder'
+                                     ' will be created', required=False, type=str)
+    
+    parser.add_argument('-m', '--models', help='models folder, where 5 .pth files are downloaded'
+                                     ' ', required=False, type=str)
+    
+    
+    args = parser.parse_args()
+    
+    input_dir = args.input
+    output_dir = args.output
+    models_folder = args.models
+    
+
+    
+    if output_dir is None:
+        output_dir = os.path.join(os.path.dirname(input_dir), os.path.basename(input_dir) + "_OUTPUT")
+    
+    if os.path.isdir(input_dir):
+        input_files = []
+        for root, dirs, files in os.walk(input_dir):
+            for file in files:
+                if file.endswith(".nii.gz"):
+                    input_files.append(os.path.join(root, file))
+
+        if len(input_files) == 0:
+            raise RuntimeError("input is a folder but no nifti files (.nii.gz) were found in here")
+
+        input_files = [os.path.join(input_dir, i) for i in input_files]
+    else:
+        "Check input folder..."
+
+
+    ### Start postprocessing ###
+
+    hd_seq_id(input_dir,output_dir,models_folder) 
+            
+    
+
+
+
+
+
+
+
+
+
