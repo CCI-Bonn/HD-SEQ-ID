@@ -1,4 +1,4 @@
-name: mustafa_pytorchenv
+name: hd_seq_id_env
 channels:
   - defaults
 dependencies:
@@ -194,6 +194,7 @@ dependencies:
   - zipp=3.6.0=pyhd3eb1b0_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.9=haebb681_0
+  - pip
   - pip:
     - absl-py==1.0.0
     - annexremote==1.5.0
@@ -343,5 +344,5 @@ dependencies:
     - whoosh==2.7.4
     - xlrd==2.0.1
     - xvfbwrapper==0.2.9
-prefix: /home/r148/miniconda3/envs/mustafa_pytorchenv
+prefix: /home/r148/miniconda3/envs/hd_seq_id_env
 
