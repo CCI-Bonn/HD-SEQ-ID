@@ -1,6 +1,6 @@
 # HD-SEQ-ID
 
-##HD-SEQ-ID: HD Sequence Identifier for brain MRI
+## HD-SEQ-ID: HD Sequence Identifier for brain MRI
 
 
 This repository provides an easy to use Python Tool to our recently published "HD-SEQ-ID" automated brain MRI sequence identification tool. 
