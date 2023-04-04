@@ -46,7 +46,7 @@ We recommend to create a new environment using the `hd-seq-id_environment.yml` f
 # With .yml file
 git clone https://github.com/NeuroAI-HD/HD-SEQ-ID.git  # Clones the Repository
 cd HD-SEQ-ID # Enter the downloaded HD-SEQ-ID folder
-conda env create --name <ENVNAME> --file=hd_seq_id_environment.yml  # Creates a new Virtual environment via installing all required packages. <ENVNAME> should be specified by user.
+conda env create --name <ENVNAME> --file=hd-seq-id_environment.yml  # Creates a new Virtual environment via installing all required packages. <ENVNAME> should be specified by user.
 conda activate <ENVNAME>  # Activates the environment
 
 ```
