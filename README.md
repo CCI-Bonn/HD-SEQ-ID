@@ -7,8 +7,9 @@ This repository provides an easy to use Python Tool to our recently published "H
 
 If you are using HD-SEQ-ID, please cite the following publication: 
 
-Deep Learning-based Identification of Brain MRI Sequences Using a Model Trained on Large Multicentric Study Cohorts
+
 - Mahmutoglu MA, Preetha CJ, Meredig H, Tonn J-C, Weller M, Wick W, Bendszus M, Brugnara G, Vollmuth P. Deep Learning-based Identification of Brain MRI Sequences Using a Model Trained on Large Multicentric Study Cohorts. Radiology AI, 2023
+
 
 
 Compared to other previously published brain MRI (cMRI) sequence classification tools, HD-SEQ-ID has some significant advantages:
