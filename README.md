@@ -28,7 +28,7 @@ or treatment-induced tissue alterations. We used 80% of data for training and va
 
 
 ## Installation Instructions 
-Note that you need to have a python3 installation for HD-SEQ-ID to work. HD-SEQ-ID runs on Linux (might work on WSL) with python3. Supported python3 versions are python3.7.3 and above, might work with 3.9 as well. 
+Note that you need to have a python3 installation for HD-SEQ-ID to work. HD-SEQ-ID runs on Linux (might work on WSL) with python3. Supported python3 versions are python3.7.3 and above. 
 
 In order to run a PC with a GPU with at least 4 GB of VRAM and cuda/pytorch support is required. Running the prediction on CPU is also supported.
  
