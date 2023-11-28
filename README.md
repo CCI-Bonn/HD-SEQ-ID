@@ -81,7 +81,7 @@ Here is a minimalistic example of how you can use HD-SEQ-ID.
 python hd_seq_id -i <INPUT_FOLDER> -o <OUTPUT_FOLDER> -m <MODELS_FOLDER>
 ```
 
-The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files in THE OUTPUT_FOLDER with the predicted MRI labels added as a suffix to the NIfTI basename: `*____<predictioin>.nii.gz` 
+The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files in THE OUTPUT_FOLDER with the predicted MRI labels added as a suffix to the NIfTI basename: `*____<predicted-label>.nii.gz` 
 
 Predictions will be exported as a CSV file in the output folder named as `predictions.csv`. We encourage to compare them with the ground truth labels prior to further analysis. 
 
