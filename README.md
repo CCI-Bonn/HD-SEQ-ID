@@ -83,7 +83,7 @@ The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER a
 
 Predictions will be exported as a CSV file in the output folder named as `predictions.csv`. We encourage to compare them with the ground truth labels prior to further analysis. 
 
-Future versions might include parameters to specifiy whether an automated renaming is wished by user (might output a list of the MRI classes without renaming the original NIfTI files).
+Future versions might include parameters to specifiy whether an automated renaming is wished by user (might output a list of the MRI classes without renaming the original NIfTI files), a docker file and a script for quick visual controlling the output predictions.
 
 
 
