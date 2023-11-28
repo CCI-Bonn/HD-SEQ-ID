@@ -9,6 +9,8 @@ If you are using HD-SEQ-ID, please cite the following publication:
 
 
 - Mahmutoglu MA, Preetha CJ, Meredig H, Tonn J-C, Weller M, Wick W, Bendszus M, Brugnara G, Vollmuth P. Deep Learning-based Identification of Brain MRI Sequences Using a Model Trained on Large Multicentric Study Cohorts. Radiology AI, 2023
+  https://doi.org/10.1148/ryai.230095
+
 
 
 
