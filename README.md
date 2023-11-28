@@ -17,9 +17,9 @@ Compared to other previously published brain MRI (cMRI) sequence classification 
 up to 249 institutions  and included a broad range of MR hardware and acquisition parameters, pathologies 
 or treatment-induced tissue alterations. We used 80% of data for training and validation and 20% for testing. 
 
-- HD-SEQ-ID was trained with following braim MRI sequence types:  precontrast T1-w (T1), postcontrast T1-w (CT1), T2-w (T2), fluid-attenuated inversion recovery (FLAIR), susceptibility weighted imaging (SWI), apparent diffusion coefficient (ADC), diffusion weighted imaging with low b-values (Low-B-DWI) and high b-vlaues (High-B-DWI).   
+- HD-SEQ-ID was trained with following braim MRI sequence types:  precontrast T1-w (T1), postcontrast T1-w (CT1), T2-w (T2), fluid-attenuated inversion recovery (FLAIR), susceptibility weighted imaging (SWI), apparent diffusion coefficient (ADC), diffusion weighted imaging with low b-values (Low-B-DWI) and high b-vlaues (High-B-DWI), T2* and DSC-related sequence types (T2star-DSCrelated) including different perfusion parameters such as CBV, CBVc, CBF, TTP, K2, MTT, TMAX. TTP. The "T2star-DSCrelated" class cannot differentiate between separate perfusion parameters.
 
-- HD-SEQ-ID can identify 8 differents cMRI classes from raw NIfTI files and raneme the file automatically. 
+- HD-SEQ-ID can identify 9 differents cMRI classes from raw NIfTI files and raneme the file automatically. Sequence types that are not included in the training, e.g. time of flight angiography (TOF), are going to be assigned to one of the 9 classes wrongly, we therefore strongly encourage to use our model on tumor protocols, and compare the output predictions prior to further analysis.
 
 - HD-SEQ-ID outperformed most publicly available brain extraction algorithms (see Mahmutoglu et al. 2023).
 
@@ -79,7 +79,9 @@ Here is a minimalistic example of how you can use HD-SEQ-ID.
 python hd_seq_id -i <INPUT_FOLDER> -o <OUTPUT_FOLDER> -m <MODELS_FOLDER>
 ```
 
-The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files in THE OUTPUT_FOLDER with the predicted MRI labels added as a suffix to the NIfTI basename.
+The above command will look for all nifti files (*.nii.gz) in the INPUT_FOLDER and save the renamed NIfTI files in THE OUTPUT_FOLDER with the predicted MRI labels added as a suffix to the NIfTI basename: `*____<predictioin>.nii.gz` 
+
+Predictions will be exported as a CSV file in the output folder named as `predictions.csv`. We encourage to compare them with the ground truth labels prior to further analysis. 
 
 Future versions might include parameters to specifiy whether an automated renaming is wished by user (might output a list of the MRI classes without renaming the original NIfTI files).
 
