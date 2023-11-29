@@ -66,7 +66,7 @@ automatically. We provide CPU as well as GPU support. Running on GPU is a lot fa
 
 Define a `<MODELS_FOLDER>`, where the 5 `.pth` files are downloaded. It will be used as an input argument by running the `hd_seq_id` command.
 
-- Note that the `hd_seq_id` command should be run inside the `HED-SEQ-ID` folder, check your current working directory before running. 
+- Note that the `hd_seq_id` command should be run inside the `HD-SEQ-ID` folder, check your current working directory before running. 
 
 Define an `<INPUT_FOLDER>`, where all NIfTI images are located (4D or 3D). Define an empty `<OUTPUT_FOLDER>`, where the 3D NIfTI files, where the processed and renamed 3D NIfTIs will be located. They will be used as an input argument by running the `hd_seq_id` command.   
 
