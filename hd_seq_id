@@ -80,10 +80,15 @@ g = torch.Generator()
 g.manual_seed(1)
 
 
+
+
 #%%
 image_4d_3d_2d_file_names = []
 image_files_list = []
 image_midslice_list = []
+
+
+
 
 #%%
 def process_midslice(INPUTPATH='', OUTPUTPATH=''):
@@ -113,9 +118,11 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                 
                 # robustfov
                 inputfile = input_images[i]
-                last_vol_name = re.sub(".nii.gz","_main.nii.gz",re.sub(INPUTPATH,OUTPUTPATH,inputfile)  )  
+                last_vol_name = re.sub(".nii.gz","_main.nii.gz",re.sub(INPUTPATH,OUTPUTPATH,inputfile))  
                 if not (os.path.isdir(os.path.dirname(last_vol_name))):
                     os.makedirs(os.path.dirname(last_vol_name))
+                
+                shutil.copy(inputfile,re.sub(INPUTPATH,OUTPUTPATH,inputfile))
 
                 output_torobust = re.sub("_main.nii.gz", "_main-rf00.nii.gz", last_vol_name)
                 robust_code = 'robustfov -i ' + inputfile + ' -b 100 -r ' + output_torobust
@@ -142,7 +149,7 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                 
                 image_midslice_list.append(midslice_newname)
 
-                image_4d_3d_2d_file_names.append([input_images[i],input_images[i],midslice_newname])
+                image_4d_3d_2d_file_names.append([input_images[i],re.sub(INPUTPATH,OUTPUTPATH,inputfile),midslice_newname])
                 
             elif len(img.shape) > 3:
                 
@@ -169,16 +176,23 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                     os.makedirs(os.path.dirname(first_vol_name2))
                 if not (os.path.isdir(os.path.dirname(last_vol_name2))):
                     os.makedirs(os.path.dirname(last_vol_name2))
-                    
+
                     
                 first_vol_img_new = nibabel.Nifti1Image(first_vol_img, affine=img.affine)    
                 last_vol_img_new = nibabel.Nifti1Image(last_vol_img, affine=img.affine)
-                nibabel.save(first_vol_img_new,first_vol_name2) # 3D first volume will be saved
-                nibabel.save(last_vol_img_new,last_vol_name2) # 3D last volume will be saved
+
+                outtarget_file_first = re.sub(".nii.gz","__3d_first.nii.gz",re.sub(INPUTPATH,OUTPUTPATH,inputfile)) 
+                outtarget_file_last = re.sub(".nii.gz","__3d_last.nii.gz",re.sub(INPUTPATH,OUTPUTPATH,inputfile)) 
+                    
+
+                nibabel.save(first_vol_img_new,outtarget_file_first) # 3D first volume will be saved
+                nibabel.save(last_vol_img_new,outtarget_file_last) # 3D last volume will be saved
         
                 ###### robustfov
-                first_inputfile_torobust = first_vol_name2
-                last_inputfile_torobust = last_vol_name2
+
+                first_inputfile_torobust = outtarget_file_first
+                last_inputfile_torobust = outtarget_file_last
+
                 
                 first_output_torobust = re.sub("_first.nii.gz", "_first-rf00.nii.gz", first_inputfile_torobust)
                 last_output_torobust = re.sub("_last.nii.gz", "_last-rf00.nii.gz", last_inputfile_torobust)
@@ -192,9 +206,7 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                 first_robust_3d_img_name = first_output_torobust
                 last_robust_3d_img_name = last_output_torobust
                 
-                
-                os.unlink(first_inputfile_torobust) # delete the robust 3D lastvolume 
-                os.unlink(last_inputfile_torobust) # delete the robust 3D lastvolume
+e
                 
                 # find center of mass (CM)
                 first_robust_3d_img = nibabel.load(first_robust_3d_img_name)
@@ -215,8 +227,8 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                 first_img_midslice = first_robust_3d_img.slicer[:,:,first_mid_slice_num:(first_mid_slice_num+1)]
                 last_img_midslice = last_robust_3d_img.slicer[:,:,last_mid_slice_num:(last_mid_slice_num+1)]
 
-                first_midslice_newname = re.sub('.nii.gz','_CMmidslice.nii.gz',first_robust_3d_img_name) 
-                last_midslice_newname = re.sub('.nii.gz','_CMmidslice.nii.gz',last_robust_3d_img_name) 
+                first_midslice_newname = re.sub('.nii.gz','_first_CMmidslice.nii.gz',first_robust_3d_img_name) 
+                last_midslice_newname = re.sub('.nii.gz','_last_CMmidslice.nii.gz',last_robust_3d_img_name) 
                                     
                 try:
                     first_new_image = nibabel.Nifti1Image(first_img_midslice.get_fdata(), affine=first_robust_3d_img.affine)
@@ -228,15 +240,18 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
     
                 nibabel.save(first_new_image, first_midslice_newname)
                 nibabel.save(last_new_image, last_midslice_newname)
-                
-                os.unlink(first_robust_3d_img_name) # delete the raw 3D lastvolume 
-                os.unlink(last_robust_3d_img_name) # delete the raw 3D lastvolume 
+
+
+                os.unlink(first_robust_3d_img_name) # delete the robust 3D first volume 
+                os.unlink(last_robust_3d_img_name) # delete the robust 3D last volume 
+
                 
                 image_midslice_list.append(first_midslice_newname)
                 image_midslice_list.append(last_midslice_newname)
-                
-                image_4d_3d_2d_file_names.append([input_images[i],first_vol_name2,first_midslice_newname])
-                image_4d_3d_2d_file_names.append([input_images[i],last_vol_name2,last_midslice_newname]) 
+
+                image_4d_3d_2d_file_names.append([input_images[i],first_inputfile_torobust,first_midslice_newname])
+                image_4d_3d_2d_file_names.append([input_images[i],last_inputfile_torobust,last_midslice_newname]) 
+
             else:
                 print('check image shape or readability...')
                 
@@ -247,6 +262,8 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
     
     
     return image_4d_3d_2d_file_names
+
+
 
 
 
@@ -264,6 +281,11 @@ def resnet18(n_slices = 1, num_classes = 9):
  	net.fc = nn.Linear(in_features = 512, out_features = 9, bias = True)
  	return net
 
+
+if torch.cuda.is_available():
+    print("Running on GPU")
+else:
+    print("Running on CPU")
 
 #%%
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -322,6 +344,7 @@ def hd_seq_id(input_dir,output_dir,models_folder):
     
     # Preprocessing 
     filenames_all = process_midslice(input_dir, output_dir)
+    print(filenames_all)
     # Models
     model_1,model_2,model_3,model_4,model_5 = create_CNN_models(models_folder)
     
@@ -373,15 +396,20 @@ def hd_seq_id(input_dir,output_dir,models_folder):
 
         try:
             nibabel.save(mid_image_nib, out_newname)
-            os.unlink(midslice_images[k])
+            
             str_label_list = [dict_labels[x] for x in predictions_list]
-            df_pred = pd.DataFrame({"input":output3d_images,"predicted_label":str_label_list})
+            output_list = [os.path.basename(base) for base in output3d_images]
+            df_pred = pd.DataFrame({"input":output_list,"predicted_label":str_label_list})
             df_pred.to_csv((output_dir+"/"+"predictions.csv"), sep='\t')
             print("   ")
             print("Perictions are added as suffix to the end of the output file: *____<prediction>.nii.gz")
             print("   ")
             print("Please check the predictions.csv file in the output folder.")
             print("   ")
+            os.unlink(midslice_images[k])
+            os.unlink(output3d_images[k])
+
+
         except:
             print('an error occured by trying to save the image, check for corrupt files...')
 
@@ -401,6 +429,9 @@ if __name__ == "__main__":
     
     parser.add_argument('-m', '--models', help='models folder, where 5 .pth files are downloaded'
                                      ' ', required=False, type=str)
+
+    # parser.add_argument('-write', '--writeniftis', help='creates rename nifti files in the output folder. by default only the .csv file with predictions for each input file is created'
+    #                                  ' ', required=False, type=bool)
     
     
     args = parser.parse_args()
@@ -408,7 +439,7 @@ if __name__ == "__main__":
     input_dir = args.input
     output_dir = args.output
     models_folder = args.models
-    
+    nifti_write = args.writeniftis
 
     
     if output_dir is None:
