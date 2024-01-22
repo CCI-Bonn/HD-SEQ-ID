@@ -115,6 +115,7 @@ python3 hd_seq_id -i /mnt/input/ -o /mnt/output/ -m models/ -write False  # This
 python3 hd_seq_id -i /mnt/input/ -o /mnt/output/ -m models/ -write True  # This will create a prediction.csv file and  renamed NIfTI files (by adding the predicted MRI sequence name as a suffix [see above]) in the output folder. 
 ```
 
+If you're using the docker version, you don't need to install the weights manually, they are already in the docker image.
 
 
 ## FAQ
