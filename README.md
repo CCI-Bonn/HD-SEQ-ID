@@ -30,9 +30,10 @@ or treatment-induced tissue alterations. We used 80% of data for training and va
 
 
 ## Installation Instructions 
-Note that you need to have a python3 installation for HD-SEQ-ID to work. HD-SEQ-ID runs on Linux (might work on WSL) with python3. Supported python3 versions are python3.7.3 and above. 
+There are two options to use the HD-SEQ-ID tool. 
 
-In order to run a PC with a GPU with at least 4 GB of VRAM and cuda/pytorch support is required. Running the prediction on CPU is also supported.
+1) Creating a new python environment
+Note that you need to have a python3 installation for HD-SEQ-ID to work. HD-SEQ-ID runs on Linux (might work on WSL) with python3. Supported python3 versions are python3.7.3 and above. 
  
 Please also make sure to install FSL on your Linux operating system or WSL command line. To install FSL please visit their homepage:
 
@@ -41,7 +42,8 @@ Please also make sure to install FSL on your Linux operating system or WSL comma
 
 
 ### Manual installation
-We generally recommend to create a new virtualenv for every project that is installed so package dependencies don't get mixed.
+We generally recommend to create a new virtualenv for every project that is installed so that package dependencies don't get mixed.
+In case you encounter dependency issues, try to install the versions of the packages in the below mentioned .yml file one-by-one.
 
 #### Installing with a virtualenv
 We recommend to create a new environment using the `hd-seq-id_environment.yml` file attached to this repository.
@@ -58,7 +60,7 @@ conda activate <ENVNAME>  # Activates the environment
 
 ## How to use it 
 
-Using HD-SEQ-ID is straightforward. You can use it in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
+You can use HD-SEQ-ID in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
 automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. 
 
 - Download the models from the follwing link:
@@ -87,6 +89,27 @@ Predictions will be exported as a CSV file in the output folder named as `predic
 
 Future versions might include parameters to specifiy whether an automated renaming is wished by user (might output a list of the MRI classes without renaming the original NIfTI files), a docker version to avoid compatibility issues and a script for quick visual controlling the output predictions.
 
+
+
+2) Docker file
+Download the docker file (~28GB).
+
+```bash
+docker pull neuroradhd/hd_seq_id
+```
+
+Create a parent folder (for example a folder named as `mount_folder` ) which includes the folders `input`, `output` and `code`. Copy the `run.sh` file into the `code` folder.
+Run the following command to mount the parent folder and run the HD-SEQ-ID. 
+
+```bash
+docker run -it --name hd-seq-id-container --gpus all --mount type=bind,source="<mount_folder>",target=/mnt/ hd_seq_id:v2  /bin/bash -c "/mnt/code/run.sh"
+```
+By default, `prediction.csv` file will be created without renaming the input files. You can create renamed this selection by changing the last line of the code, as in the example below:
+
+```bash
+python3 hd_seq_id -i /mnt/input/ -o /mnt/output/ -m models/ -write False  # This will create a prediction.csv file in the output folder without creating renamed NIfTI files.
+python3 hd_seq_id -i /mnt/input/ -o /mnt/output/ -m models/ -write True  # This will create a prediction.csv file and  renamed NIfTI files (by adding the predicted MRI sequence name as a suffix [see above]) in the output folder. 
+```
 
 
 
