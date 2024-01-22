@@ -29,10 +29,11 @@ or treatment-induced tissue alterations. We used 80% of data for training and va
 
 
 
-## Installation Instructions 
+# Installation Instructions 
 There are two options to use the HD-SEQ-ID tool. 
 
-1) Creating a new python environment
+## 1) Creating a new python environment
+
 Note that you need to have a python3 installation for HD-SEQ-ID to work. HD-SEQ-ID runs on Linux (might work on WSL) with python3. Supported python3 versions are python3.7.3 and above. 
  
 Please also make sure to install FSL on your Linux operating system or WSL command line. To install FSL please visit their homepage:
@@ -58,10 +59,12 @@ conda activate <ENVNAME>  # Activates the environment
 ```
 
 
-## How to use it 
+# How to use it 
 
 You can use HD-SEQ-ID in any terminal on your linux system or WSL command line. The `hd_seq_id` command was installed 
 automatically. We provide CPU as well as GPU support. Running on GPU is a lot faster and should always be preferred. 
+Make sure you have empty space on your disk at least as much as the input files you want to rename.
+
 
 - Download the models from the follwing link:
 <sup>2</sup>https://drive.google.com/drive/folders/1reSTwPgMfb7AXC9sfNJHW9b3_uIBS0AY?usp=sharing
@@ -91,7 +94,8 @@ Future versions might include parameters to specifiy whether an automated renami
 
 
 
-2) Docker file
+## 2) Docker file
+
 Download the docker file (~28GB).
 
 ```bash
