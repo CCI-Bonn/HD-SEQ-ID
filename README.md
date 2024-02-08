@@ -108,7 +108,7 @@ Run the following command to mount the parent folder and run the HD-SEQ-ID.
 ```bash
 docker run -it --name hd-seq-id-container --gpus all --mount type=bind,source="<mount_folder>",target=/mnt/ hd_seq_id:v2  /bin/bash -c "/mnt/code/run.sh"
 ```
-By default, `prediction.csv` file will be created without renaming the input files. You can create renamed this selection by changing the last line of the code, as in the example below:
+By default, `prediction.csv` file will be created without renaming the input files. You can create renamed output `.nii.gz` files by changing the last line of the code, as in the example below:
 
 ```bash
 python3 hd_seq_id -i /mnt/input/ -o /mnt/output/ -m models/ -write False  # This will create a prediction.csv file in the output folder without creating renamed NIfTI files.
