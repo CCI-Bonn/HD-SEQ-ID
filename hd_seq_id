@@ -206,7 +206,6 @@ def process_midslice(INPUTPATH='', OUTPUTPATH=''):
                 first_robust_3d_img_name = first_output_torobust
                 last_robust_3d_img_name = last_output_torobust
                 
-e
                 
                 # find center of mass (CM)
                 first_robust_3d_img = nibabel.load(first_robust_3d_img_name)
