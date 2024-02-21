@@ -438,7 +438,7 @@ if __name__ == "__main__":
     input_dir = args.input
     output_dir = args.output
     models_folder = args.models
-    nifti_write = args.writeniftis
+    # nifti_write = args.writeniftis
 
     
     if output_dir is None:
