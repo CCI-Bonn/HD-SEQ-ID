@@ -130,7 +130,7 @@ If you're using the docker version, you don't need to install the weights manual
 
 ## FAQ
 
-1) **How much GPU memory do I need to run HD-BET?**  
+1) **How much GPU memory do I need to run HD-SEQ-ID?**  
 We ran all our experiments on NVIDIA GeForce RTX 3060 and NVIDIA Titan X GPUs with 12 GB memory. For inference you will need less, but since 
 inference in implemented by exploiting the fully convolutional nature of CNNs the amount of memory required depends on 
 your image. Typical image should run with less than 4 GB of GPU memory consumption.
