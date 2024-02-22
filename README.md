@@ -44,7 +44,17 @@ Please also make sure to install FSL on your Linux operating system or WSL comma
 
 ### Manual installation
 We generally recommend to create a new virtualenv for every project that is installed so that package dependencies don't get mixed.
-In case you encounter dependency issues, try to install the versions of the packages in the below mentioned .yml file one-by-one.
+In case you encounter dependency issues, try to install the versions of the packages in the below mentioned .yml file one-by-one. The most important packages are:
+
+PyTorch:
+```shell
+pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu118
+```
+
+Monai:
+```shell
+pip install monai==0.8.0
+```
 
 #### Installing with a virtualenv
 We recommend to create a new environment using the `hd-seq-id_environment.yml` file attached to this repository.
