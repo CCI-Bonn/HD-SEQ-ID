@@ -109,7 +109,7 @@ Future versions might include parameters to specifiy whether an automated renami
 Download the docker file (~28GB).
 
 ```bash
-docker pull neuroradhd/hd_seq_id
+docker pull neuroradhd/hd_seq_id:v2
 ```
 
 Create a parent folder (for example a folder named as `mount_folder` ) which includes the folders `input`, `output` and `code`. Copy the `run.sh` file into the `code` folder.
